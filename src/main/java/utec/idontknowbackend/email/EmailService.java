@@ -33,7 +33,7 @@ public class EmailService {
     @Async
     @EventListener
     public void onUsuarioRegistrado(UsuarioRegistradoEvent event) {
-        Usuario usuario = event.getUsuarioAutenticado();
+        Usuario usuario = event.getUsuario();
         Context context = new Context();
         context.setVariable("nombre", usuario.getNombre());
         enviar(usuario.getEmail(), "¡Bienvenido a I don't know!", "welcome-email", context);
