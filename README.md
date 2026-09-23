@@ -41,9 +41,10 @@
 * **Curso:** CS 2031 Desarrollo Basado en Plataforma  
 * **Integrantes del Equipo:**  
   * Estudiante 1 (Hideki Aldo Kunigami Chia) \- hideki.kunigami@utec.edu.pe  
-  * Estudiante 2 (Nombre Completo) \- correo2@utec.edu.pe  
-  * Estudiante 3 (Nombre Completo) \- correo3@utec.edu.pe  
-  * Estudiante 4 (Nombre Completo) \- correo4@utec.edu.pe
+  * Estudiante 2 (Sergio Peña Andia) \- sergio.pena@utec.edu.pe  
+  * Estudiante 3 (Rance Blondet Borja) \- rance.blondet.b@utec.edu.pe  
+  * Estudiante 4 (Felipe Dipas Prado) \- felipe.dipas.p@utec.edu.pe
+  * Estudiante 4 (Adrian Pacheco Sullucucho) \- adrian.pacheco@utec.edu.pe
 
 ## **💡 Introducción**
 
