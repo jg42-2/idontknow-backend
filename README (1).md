@@ -40,7 +40,7 @@
 * **Título del Proyecto:** IDontKnow \- Plataforma Agregadora y Analítica de Mercados de Predicción  
 * **Curso:** CS 2031 Desarrollo Basado en Plataforma  
 * **Integrantes del Equipo:**  
-  * Estudiante 1 (Nombre Completo) \- correo1@utec.edu.pe  
+  * Estudiante 1 (Hideki Aldo Kunigami Chia) \- hideki.kunigami@utec.edu.pe  
   * Estudiante 2 (Nombre Completo) \- correo2@utec.edu.pe  
   * Estudiante 3 (Nombre Completo) \- correo3@utec.edu.pe  
   * Estudiante 4 (Nombre Completo) \- correo4@utec.edu.pe
