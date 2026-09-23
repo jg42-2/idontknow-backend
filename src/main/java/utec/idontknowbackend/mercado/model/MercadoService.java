@@ -27,8 +27,8 @@ public class MercadoService {
     private final ModelMapper modelMapper;
     private final ApplicationEventPublisher eventPublisher;
 
-    public Page<MercadoResponseDTO> getAll(Pageable pageable) {
-        return mercadoRepository.findAll(pageable)
+    public Page<MercadoResponseDTO> getAll(String categoria, String q, Pageable pageable) {
+        return mercadoRepository.buscar(categoria, q, pageable)
                 .map(this::toResponseDTO);
     }
 

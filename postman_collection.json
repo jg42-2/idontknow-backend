@@ -1,0 +1,628 @@
+{
+  "info": {
+    "name": "I don't know - API (CS2031 DBP)",
+    "description": "API del backend de \"I don't know\": un diario donde cada noticia es una probabilidad, basado en datos de Polymarket, con portadas diarias en español.\n\n**Autenticación**: la colección tiene configurado Bearer Token a nivel de colección usando la variable {{token}}. Corre cualquiera de los requests de la carpeta Auth primero — el token se guarda solo (vía script de test) y el resto de los requests que lo necesitan lo heredan automáticamente. Los endpoints públicos (lectura de mercados, ediciones, titulares, categorías) tienen 'No Auth' seteado explícitamente para que funcionen sin loguearse.\n\n**Usuario admin de prueba** (sembrado por data.sql): admin@idontknow.com / admin123 — necesario para crear/borrar categorías.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "categoriaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "mercadoId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "titularId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "fecha",
+      "value": "2026-09-23",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Registro e inicio de sesión. Ambos endpoints son públicos (no requieren token) y devuelven un JWT que se guarda automáticamente en la variable {{token}} para el resto de la colección.",
+      "item": [
+        {
+          "name": "Registrar usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Crea una cuenta nueva. Dispara el evento UsuarioRegistradoEvent que envía un correo de bienvenida de forma asíncrona. El JWT devuelto se guarda automáticamente en {{token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Joseph Test\",\n  \"email\": \"joseph@test.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (usuario normal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con un usuario ya registrado. El JWT devuelto se guarda automáticamente en {{token}} para las siguientes requests que requieran autenticación.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"joseph@test.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (admin seed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con el usuario admin precargado por data.sql (role ADMIN). Usa este request antes de probar los endpoints de Categorías que requieren rol ADMIN (crear/borrar). El JWT queda en {{token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@idontknow.com\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "description": "Perfil del usuario autenticado. Todos requieren el header Authorization con el JWT (heredado de la colección vía {{token}}).",
+      "item": [
+        {
+          "name": "Ver mi perfil",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "me"
+              ]
+            },
+            "description": "Devuelve los datos del usuario autenticado (identificado a partir del token, no por un ID en la URL), incluyendo las categorías que sigue."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar mi perfil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "me"
+              ]
+            },
+            "description": "Actualiza nombre y/o contraseña del usuario autenticado. Ambos campos son opcionales: envía solo el que quieras cambiar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Joseph Actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seguir una categoría",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/me/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "me",
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "description": "Agrega la categoría indicada a la lista de temas que sigue el usuario. Esto determina, entre otras cosas, a quién se le notifica por correo cuando un mercado de esa categoría cruza el 50%."
+          },
+          "response": []
+        },
+        {
+          "name": "Dejar de seguir una categoría",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/me/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "me",
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "description": "Quita la categoría indicada de los temas que sigue el usuario."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categorías",
+      "description": "Listar es público. Crear y borrar requieren rol ADMIN (usa el request 'Login (admin seed)' de la carpeta Auth primero).",
+      "item": [
+        {
+          "name": "Listar categorías",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias"
+              ]
+            },
+            "description": "Lista todas las categorías disponibles (política, economía, deportes, tecnología, etc.). Público, no requiere token — se usa para poblar filtros en el frontend.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear categoría (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias"
+              ]
+            },
+            "description": "Crea una nueva categoría. Restringido con @PreAuthorize(\"hasRole('ADMIN')\") — requiere loguearse con el usuario admin sembrado en data.sql.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"SALUD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Borrar categoría (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "description": "Elimina una categoría por ID. Restringido a rol ADMIN."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Mercados",
+      "description": "Consulta de mercados de Polymarket ya sincronizados. Todo público, no requiere token.",
+      "item": [
+        {
+          "name": "Listar mercados (paginado)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mercados?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mercados"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista los mercados sincronizados, paginados. Usa los query params estándar de Spring Data (page, size, sort).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ver detalle de un mercado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mercados/{{mercadoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mercados",
+                "{{mercadoId}}"
+              ]
+            },
+            "description": "Devuelve el detalle completo de un mercado, incluyendo su historial de probabilidades (para graficar cómo cambió en el tiempo).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ediciones (Portadas)",
+      "description": "La portada diaria armada por el proceso de sincronización + scoring. Todo público.",
+      "item": [
+        {
+          "name": "Portada de hoy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ediciones/hoy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ediciones",
+                "hoy"
+              ]
+            },
+            "description": "Devuelve la edición (portada) del día actual con sus titulares. Si el job programado (PolymarketSyncScheduler) todavía no corrió hoy, puede devolver 404.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Portada por fecha",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ediciones/{{fecha}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ediciones",
+                "{{fecha}}"
+              ]
+            },
+            "description": "Devuelve la portada de un día específico, en formato de fecha ISO (yyyy-MM-dd). Útil para la sección 'Archivo' de días anteriores.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Archivo de portadas (paginado)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ediciones?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ediciones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista resumida de todas las portadas históricas, paginada, sin traer el detalle completo de titulares (usa EdicionSummaryDTO para no sobrecargar la respuesta).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Titulares",
+      "description": "Detalle de un titular individual. Público.",
+      "item": [
+        {
+          "name": "Ver detalle de un titular",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/titulares/{{titularId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "titulares",
+                "{{titularId}}"
+              ]
+            },
+            "description": "Devuelve el titular con su historial de probabilidad (para el gráfico del detalle) y la fecha estimada de resolución del mercado.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Guardados",
+      "description": "Titulares que el usuario autenticado marcó para leer después. Requieren token.",
+      "item": [
+        {
+          "name": "Guardar un titular",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/guardados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "guardados"
+              ]
+            },
+            "description": "Guarda un titular en la lista personal del usuario autenticado. Falla con 409 si ya lo tenía guardado (DuplicateResourceException).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titularId\": {{titularId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Quitar un titular guardado",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/guardados/{{titularId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "guardados",
+                "{{titularId}}"
+              ]
+            },
+            "description": "Quita un titular de la lista de guardados del usuario autenticado."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar mis guardados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/guardados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "guardados"
+              ]
+            },
+            "description": "Lista todos los titulares que el usuario autenticado tiene guardados."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
