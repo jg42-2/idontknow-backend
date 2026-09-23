@@ -44,7 +44,7 @@
   * Estudiante 2 (Sergio Peña Andia) \- sergio.pena@utec.edu.pe  
   * Estudiante 3 (Rance Blondet Borja) \- rance.blondet.b@utec.edu.pe  
   * Estudiante 4 (Felipe Dipas Prado) \- felipe.dipas.p@utec.edu.pe
-  * Estudiante 4 (Adrian Pacheco Sullucucho) \- adrian.pacheco@utec.edu.pe
+  * Estudiante 5 (Joseph Geraldo Soto) \- joseph.geraldo@utec.edu.pe
 
 ## **💡 Introducción**
 
