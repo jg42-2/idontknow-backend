@@ -1,243 +1,249 @@
-# **📰 IDontKnow Backend**
-
-**Curso:** CS 2031 \- Desarrollo Basado en Plataforma
-
-**Período:** 2026-2
-
-**Institución:** Universidad de Ingeniería y Tecnología (UTEC)
-
-## **📋 Índice**
-
-1. Portada e Integrantes  
-2. [Introducción](#bookmark=id.wjz6f11rxbeo)  
-   * [Contexto](#bookmark=id.e5y0t7btf89k)  
-   * [Objetivos del Proyecto](#bookmark=id.unryz53xx0i3)  
-3. [Identificación del Problema o Necesidad](#bookmark=id.e7d44gcah0ak)  
-   * [Descripción del Problema](#bookmark=id.v65w1gjvv007)  
-   * [Justificación](#bookmark=id.n7gsoybgzme)  
-4. [Descripción de la Solución](#bookmark=id.ov5d9qvyztqs)  
-   * [Funcionalidades Principales](#bookmark=id.elb4tjrgz8pk)  
-   * [Tecnologías y Herramientas Utilizadas](#bookmark=id.s9nstci2pu4b)  
-5. [Modelo de Entidades y Arquitectura de Datos](#bookmark=id.cily7dfw8e6e)  
-   * [Diagrama de Entidades](#bookmark=id.ravcmyqmlilj)  
-   * [Descripción de Entidades y Relaciones](#bookmark=id.6jf7urg29oh5)  
-   * [Constraints y Validaciones](#bookmark=id.ju5ru9l7gt39)  
-6. [Manejo de Errores y Excepciones Globales](#bookmark=id.dpv7ws1oza9a)  
-7. [Medidas de Seguridad e Implementación JWT](#bookmark=id.ilne9ryatez1)  
-   * [Autenticación y Autorización](#bookmark=id.xggsqdpenui7)  
-   * [Prevención de Vulnerabilidades](#bookmark=id.n8gsf1lxojl9)  
-8. [Eventos y Asincronía](#bookmark=id.xtv0y4o97i4g)  
-   * [Eventos Personalizados](#bookmark=id.u0racd433gig)  
-   * [Procesamiento Asíncrono y Servicio de Email](#bookmark=id.a2hateqjyh1f)  
-9. [Instalación, Configuración y Variables de Entorno](#bookmark=id.d86dycwqiim6)  
-10. [Documentación de API y Colección de Postman](#bookmark=id.deyranka3145)  
-11. [Gestión del Proyecto, GitHub & CI/CD](#bookmark=id.g0ilwme3a7oy)  
-12. [Conclusión y Trabajo Futuro](#bookmark=id.qmaxzwx9t624)  
-13. [Apéndices y Licencia](#bookmark=id.1d8oihiofwj7)
+# I Don't Know: un diario donde cada noticia es una probabilidad
 
-## **👥 Portada e Integrantes**
-
-* **Título del Proyecto:** IDontKnow \- Plataforma Agregadora y Analítica de Mercados de Predicción  
-* **Curso:** CS 2031 Desarrollo Basado en Plataforma  
-* **Integrantes del Equipo:**  
-  * Estudiante 1 (Hideki Aldo Kunigami Chia) \- hideki.kunigami@utec.edu.pe  
-  * Estudiante 2 (Sergio Peña Andia) \- sergio.pena@utec.edu.pe  
-  * Estudiante 3 (Rance Blondet Borja) \- rance.blondet.b@utec.edu.pe  
-  * Estudiante 4 (Felipe Dipas Prado) \- felipe.dipas.p@utec.edu.pe
-  * Estudiante 5 (Joseph Geraldo Soto) \- joseph.geraldo@utec.edu.pe
-
-## **💡 Introducción**
-
-### **Contexto**
+Backend del proyecto del curso CS 2031 Desarrollo Basado en Plataforma (UTEC, 2026-2).
 
-En la actualidad, los mercados de predicción (tales como Polymarket) se han consolidado como herramientas eficaces para la agregación de expectativas probabilísticas globales sobre eventos políticos, económicos, sociales y tecnológicos. Sin embargo, el volumen de información y la velocidad con la que cambian las probabilidades hacen que sea complejo para el usuario promedio procesar de forma ordenada los movimientos críticos del mercado y su impacto mediático.
-
-### **Objetivos del Proyecto**
+Integrantes:
 
-* **General:** Construir un backend escalable, seguro y reactivo capaz de ingerir, traducir, categorizar y analizar datos de mercados de predicción en tiempo real.  
-* **Específicos:**  
-  1. Diseñar e implementar una arquitectura en capas RESTful robusta bajo Spring Boot.  
-  2. Integrar servicios externos mediante cliente HTTP para la ingesta de Polymarket y traducción procesada con el modelo Groq LLM.  
-  3. Implementar un motor de análisis probabilístico y eventos asíncronos para notificar cruces de umbrales en mercados guardados.  
-  4. Garantizar altos estándares de seguridad mediante Spring Security, tokens JWT y cifrado de credenciales.
+- Hideki Aldo Kunigami Chia
+- Sergio Peña Andia
+- Rance Blondet Borja
+- Felipe Dipas Prado
+- Joseph Geraldo Soto
 
-## **🎯 Identificación del Problema o Necesidad**
+Deploy: [PEGAR AQUÍ EL LINK DE RAILWAY]/api/v1 · Swagger: [LINK]/api/v1/swagger-ui/index.html
 
-### **Descripción del Problema**
+## Índice
 
-Los usuarios interesados en tendencias globales enfrentan fragmentación de datos y barreras de lenguaje/contexto al consultar plataformas de mercados de predicción internacionales. Además, la falta de historización de titulares y snapshots probabilísticos impide analizar la evolución temporal de la percepción pública respecto a una noticia dada.
+1. [Introducción](#introducción)
+2. [Identificación del problema](#identificación-del-problema)
+3. [Descripción de la solución](#descripción-de-la-solución)
+4. [Modelo de entidades](#modelo-de-entidades)
+5. [Manejo de errores](#manejo-de-errores)
+6. [Medidas de seguridad](#medidas-de-seguridad)
+7. [Eventos y asincronía](#eventos-y-asincronía)
+8. [Endpoints](#endpoints)
+9. [Cómo correrlo](#cómo-correrlo)
+10. [GitHub y gestión del proyecto](#github-y-gestión-del-proyecto)
+11. [Conclusión](#conclusión)
+12. [Apéndices](#apéndices)
 
-### **Justificación**
+## Introducción
 
-Centralizar estos datos en una plataforma en español que genere portadas informativas dinámicas, categorice titulares y notifique fluctuaciones drásticas mediante un sistema de cálculo de *scores* algorítmicos otorga una ventaja estratégica analítica tanto a investigadores como a entusiastas del sector financiero y de noticias.
+### Contexto
 
-## **🛠️ Descripción de la Solución**
+Polymarket es una plataforma donde miles de personas apuestan dinero sobre cosas que van a pasar: elecciones, guerras, decisiones de la Fed, finales deportivas. El precio de cada apuesta funciona como una probabilidad: si el "Sí" cuesta 0.34, el mercado cree que hay 34% de que pase. Es información muy útil, pero está en inglés, pensada para apostar y no para informarse.
 
-### **Funcionalidades Principales**
+### Objetivos del proyecto
 
-1. **Módulo de Autenticación y Usuarios:** Registro, inicio de sesión seguro, gestión de perfiles y asignación de roles (USER, ADMIN).  
-2. **Ingesta y Sincronización Automática (Polymarket & Groq):** *Scheduler* periódico que extrae información de Polymarket, traduce titulares y análisis contextuales vía Groq API.  
-3. **Gestión de Mercados y Snapshots:** Almacenamiento histórico de probabilidad en puntos específicos del tiempo (*snapshots*) para realizar trazabilidad de la tendencia.  
-4. **Módulo de Ediciones y Portadas (Edicion & PortadaBuilder):** Generación automática de resúmenes de prensa y portadas basadas en eventos destacados y puntuaciones calculadas (ScoreCalculator).  
-5. **Guardado y Sistema de Alertas por Umbral:** Los usuarios pueden guardar mercados de interés. Si un mercado cruza un umbral de probabilidad configurado, se dispara un evento asíncrono de notificación por email.  
-6. **Módulo de Categorías y Titulares:** Agrupación temática de noticias y consulta detallada mediante DTOs especializados.
+- Traer todos los días los mercados activos de Polymarket y guardar una foto diaria de su probabilidad.
+- Armar automáticamente una portada con los temas que más cambiaron desde ayer, usando un puntaje propio.
+- Convertir las preguntas en titulares en español con un modelo de lenguaje (Groq).
+- Permitir que un usuario cree su cuenta, guarde titulares y siga temas para recibir alertas por correo.
+- Construir todo con una arquitectura en capas, segura con JWT y con procesos lentos en segundo plano.
 
-### **Tecnologías y Herramientas Utilizadas**
+## Identificación del problema
 
-* **Lenguaje & Framework:** Java 17, Spring Boot 3.x (Spring Web, Spring Data JPA, Spring Security, Spring Mail).  
-* **Base de Datos:** PostgreSQL (Producción / Desarrollo) / H2 (Pruebas).  
-* **Mapeo y Utilidades:** Lombok, ModelMapper.  
-* **Integración IA & APIs Externas:** Groq Client (Traducción/Procesamiento de Lenguaje Natural) y Polymarket REST API.  
-* **Documentación & Swagger:** OpenAPI 3 / Springdoc.  
-* **Contenedores:** Dockerfile para despliegue e integración continua.
+### Descripción del problema
 
-## **📐 Modelo de Entidades y Arquitectura de Datos**
+Alguien que quiere saber cómo va una elección no va a leer cientos de mercados en inglés en una página de apuestas. Y aunque lo haga, Polymarket solo muestra el precio actual: no hay forma directa de ver cuánto cambió la opinión de un día a otro, que es lo que convierte un tema en noticia.
 
-### **Diagrama de Entidades**
+### Justificación
 
- \+--------------+       1..N       \+--------------+  
- |   Usuario    |------------------|   Guardado   |  
- \+--------------+                  \+--------------+  
-        | 1                               | N  
-        |                                 |  
-        | N                               | 1  
- \+--------------+       1..N       \+--------------+       1..N       \+--------------+  
- |   Edicion    |------------------|   Mercado    |------------------|   Snapshot   |  
- \+--------------+                  \+--------------+                  \+--------------+  
-        | N                               | N  
-        |                                 |  
-        | 1                               | 1  
- \+--------------+                  \+--------------+  
- |  Categoria   |                  |   Titular    |  
- \+--------------+                  \+--------------+
+Los medios cuentan lo que pasó, pero los mercados de predicción muestran lo que la gente cree que va a pasar, y con dinero de por medio. Llevar esa información al español, ordenada como un diario y con historial, la hace útil para cualquier lector. Además, el cambio diario es un buen filtro editorial: si un mercado se movió 15 puntos en un día, algo pasó.
 
-### **Descripción de Entidades y Relaciones**
+## Descripción de la solución
 
-El modelo abarca 7 entidades principales para representar toda la lógica del negocio:
+### Funcionalidades implementadas
 
-1. **Usuario:** Contiene id, email, password cifrado con BCrypt, nombre, rol (Role) y fecha de registro.  
-2. **Categoria:** Agrupa mercados por temas (Ej: Política, Tecnología, Economía). Relación @OneToMany con Mercado.  
-3. **Mercado:** Entidad central que representa el mercado de predicción. Posee atributos como título, probabilidad, volumen, umbral de notificación. Relaciones con Categoria, Titular y Snapshot.  
-4. **Snapshot:** Captura histórica del estado del mercado (probabilidad y timestamp) para análisis temporal. Relación @ManyToOne con Mercado (FetchType.LAZY).  
-5. **Titular:** Información mediática asociada a los cambios del mercado. Relación @ManyToOne con Mercado.  
-6. **Edicion:** Agrupación editorial/diaria que reúne los titulares y mercados más relevantes del día mediante cálculo de puntuaciones.  
-7. **Guardado:** Entidad intermedia que representa la relación entre un Usuario y los Mercados que sigue para recibir notificaciones de umbral cruzado.
+1. Registro e inicio de sesión con JWT. Al registrarse, el usuario recibe un correo de bienvenida.
+2. Sincronización diaria con Polymarket. Un job programado (todos los días a las 6 a.m.) trae los mercados activos, crea los nuevos, les asigna una categoría según palabras clave de la pregunta y guarda un snapshot de la probabilidad del día.
+3. Portada automática. Con los movimientos del día se calcula un puntaje por mercado: puntos por cada punto porcentual de cambio, +15 si cruzó el 50% y +10 si se define en menos de 7 días. Los 10 con mayor puntaje entran a la portada, y Groq convierte cada pregunta en un titular en español.
+4. Archivo de portadas y detalle de cada titular con el historial de probabilidades, para el gráfico de "cómo cambió".
+5. Búsqueda de mercados con paginación, filtro por categoría y búsqueda por texto.
+6. Titulares guardados por usuario.
+7. Seguir categorías. Si un mercado de una categoría que sigues cruza el 50%, te llega un correo.
+8. Gestión de categorías, solo para el rol ADMIN.
 
-### **Constraints y Validaciones**
+### Tecnologías utilizadas
 
-* **A nivel de BD:** @Column(nullable \= false, unique \= true) para el email de usuarios; llaves foráneas indexadas y restricciones de unicidad compuestas en la tabla de guardados.  
-* **A nivel de Aplicación:** Uso estricto de @Valid, @NotBlank, @Email, @Size en todos los DTOs de petición (RegisterRequestDTO, CategoriaRequestDTO, GuardadoRequestDTO, etc.).
+- Java 21 y Spring Boot 4.1 (Web MVC, Data JPA, Security, Validation, Mail, Thymeleaf)
+- PostgreSQL 16
+- JJWT 0.12 para los tokens y BCrypt para las contraseñas
+- ModelMapper para el mapeo entidad-DTO y Lombok
+- Springdoc OpenAPI (Swagger UI)
+- APIs externas: Polymarket Gamma API (mercados y precios) y Groq con el modelo `llama-3.3-70b-versatile` (titulares en español)
+- Docker y Docker Compose para desarrollo local, Railway para el deploy
+- JUnit 5 y Mockito para las pruebas, GitHub Actions para CI
 
-## **✖️ Manejo de Errores y Excepciones Globales**
+## Modelo de entidades
 
-El sistema implementa una arquitectura centralizada de manejo de errores utilizando un @ControllerAdvice (GlobalExceptionHandler), asegurando respuestas con código HTTP semántico y una estructura JSON estándar (ErrorResponse).
+```mermaid
+erDiagram
+    USUARIO ||--o{ GUARDADO : guarda
+    TITULAR ||--o{ GUARDADO : "es guardado en"
+    USUARIO }o--o{ CATEGORIA : sigue
+    MERCADO }o--o{ CATEGORIA : pertenece
+    MERCADO ||--o{ SNAPSHOT : tiene
+    EDICION ||--o{ TITULAR : contiene
+    MERCADO ||--o{ TITULAR : "aparece como"
+```
 
-### **Jerarquía de Excepciones Personalizadas:**
+### Descripción de entidades
 
-* ResourceNotFoundException (HTTP 404): Entidad no encontrada por ID o criterio.  
-* DuplicateResourceException (HTTP 409): Intento de duplicar un email o un mercado guardado.  
-* InvalidCredentialsException (HTTP 401): Fallo de autenticación en login.  
-* TokenExpiredException (HTTP 401): JWT expirado o con firma inválida.  
-* UnauthorizedOperationException (HTTP 403): Intento de acceder a recursos sin los permisos de rol adecuados.  
-* InvalidOperationException (HTTP 400): Inconsistencia en la lógica de negocio recibida.  
-* ExternalServiceException (HTTP 502/503): Errores en las llamadas a Polymarket o Groq API.  
-* EmailSendingException (HTTP 500): Fallos en el servidor SMTP/servicio de correo.
+- Usuario: nombre, email (único), contraseña hasheada con BCrypt, rol (`USER` o `ADMIN`) y fecha de registro. Sigue varias categorías (ManyToMany) y tiene varios guardados (OneToMany).
+- Categoria: nombre único (POLITICA, ECONOMIA, DEPORTES, TECNOLOGIA). Se relaciona muchos a muchos con Mercado y con Usuario.
+- Mercado: id de Polymarket (único e indexado), pregunta original en inglés, probabilidad actual, si está resuelto y fecha estimada de resolución. Tiene muchos snapshots y pertenece a varias categorías.
+- Snapshot: la foto diaria de un mercado (probabilidad y fecha). Hay una restricción única por mercado y fecha, así que solo existe una foto por día.
+- Edicion: la portada de un día. La fecha es única.
+- Titular: pertenece a una edición y a un mercado. Guarda el texto en español, la probabilidad del día, el cambio desde ayer y el puntaje.
+- Guardado: tabla intermedia entre Usuario y Titular con la fecha en que se guardó. Tiene una restricción única (usuario, titular) para no guardar dos veces lo mismo.
 
-## **🔒 Medidas de Seguridad e Implementación JWT**
+Todas las relaciones usan `FetchType.LAZY`. Las colecciones que dependen de su padre (snapshots de un mercado, titulares de una edición, guardados de un usuario) usan `cascade = ALL` y `orphanRemoval`. En las entidades hay restricciones de base de datos (`nullable`, `unique`, `length`, índices) y validaciones como `@NotBlank`, `@Email`, `@Size`, `@DecimalMin` y `@DecimalMax`. Los DTOs de entrada se validan con `@Valid`, y la contraseña además con un `@Pattern` que exige mayúscula, minúscula y número.
 
-### **Autenticación y Autorización**
+Los controladores nunca devuelven entidades: hay DTOs separados de request, response, detalle y resumen (por ejemplo `MercadoResponseDTO` y `MercadoDetailDTO`, o `EdicionResponseDTO` y `EdicionSummaryDTO`), y ninguno expone la contraseña.
 
-La seguridad está gestionada por **Spring Security** y **JWT (JSON Web Tokens)**:
+## Manejo de errores
 
-* **JwtService:** Se encarga de la generación, extracción de *claims* (userId, email, roles) y validación de tokens con clave secreta leída de variables de entorno.  
-* **JwtFilter:** Intercepta cada solicitud HTTP, extrae el token del encabezado Authorization: Bearer \<token\>, valida su autenticidad y establece el SecurityContext.  
-* **Control de Acceso por Roles:** Anotaciones @PreAuthorize("hasRole('ADMIN')") en métodos críticos y reglas por URL configuradas en SecurityConfig.
+Todos los errores pasan por un `@RestControllerAdvice` (`GlobalExceptionHandler`) que responde siempre con el mismo formato:
 
-### **Prevención de Vulnerabilidades**
+```json
+{
+  "timestamp": "2026-09-23T21:39:46.621",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Ya existe una cuenta con ese email",
+  "path": "/api/v1/auth/register"
+}
+```
 
-* **Inyección SQL:** Prevenida mediante el uso de Spring Data JPA y consultas parametrizadas (JPQL).  
-* **Cifrado de Contraseñas:** Algoritmo **BCryptPasswordEncoder** para el hashing seguro de contraseñas.  
-* **CORS:** Configuración explícita en SecurityConfig restringiendo orígenes no autorizados.  
-* **Protección CSRF:** Deshabilitado de forma segura debido a que la API es estrictamente *stateless* (basada en JWT).
+Excepciones propias y su código:
 
-## **⚡ Eventos y Asincronía**
+| Excepción | HTTP | Cuándo |
+|---|---|---|
+| `ResourceNotFoundException` | 404 | No existe el mercado, titular, categoría o portada |
+| `DuplicateResourceException` | 409 | Email ya registrado, categoría repetida, titular ya guardado |
+| `InvalidCredentialsException` | 401 | Email o contraseña incorrectos |
+| `InvalidOperationException` | 400 | Dejar de seguir una categoría que no sigues |
+| `ExternalServiceException` | 500 | Falla al consultar Polymarket |
+| `EmailSendingException` | 500 | Falla del servidor de correo |
 
-Para evitar acoplamiento rígido y optimizar los tiempos de respuesta de la API, la aplicación utiliza el motor de eventos de Spring con @EventListener y procesamiento asíncrono habilitado vía @EnableAsync.
+`TokenExpiredException` (401) y `UnauthorizedOperationException` (403) también están definidas; las dejamos listas para cuando agreguemos refresh tokens y permisos por recurso.
 
-### **Eventos Personalizados:**
+También se manejan excepciones de Spring: `MethodArgumentNotValidException` (400, con el campo y el mensaje), `HttpMessageNotReadableException` (400, JSON mal formado), `AccessDeniedException` (403) y un caso genérico que devuelve 500 sin exponer detalles internos. Tenerlo en un solo lugar evita try/catch en los controladores y el frontend siempre recibe el mismo formato.
 
-1. **UsuarioRegistradoEvent:** Disparado tras el registro exitoso de un usuario. Activa el envío asíncrono del correo de bienvenida.  
-2. **MercadoUmbralCruzadoEvent:** Se dispara durante la ingesta/sincronización cuando un mercado supera o cae por debajo del umbral establecido.  
-3. **PortadaGeneradaEvent:** Notifica la creación y consolidación de una nueva edición diaria.
+## Medidas de seguridad
 
-### **Procesamiento Asíncrono y Servicio de Email**
+### Seguridad de datos
 
-* **AsyncConfig:** Configura un ThreadPoolTaskExecutor optimizado para tareas en segundo plano.  
-* **EmailService:** Utiliza JavaMailSender con plantillas HTML renderizadas en Thymeleaf (welcome-email.html y umbral-cruzado-email.html), ejecutándose dentro de métodos @Async para no bloquear el hilo de ejecución principal.
+- Autenticación stateless con JWT. El login y el registro devuelven un token firmado con HMAC que dura 24 horas. `JwtFilter` lo lee del header `Authorization: Bearer`, valida la firma y la expiración, carga al usuario con un `UserDetailsService` propio y lo pone en el `SecurityContext`.
+- Los servicios obtienen al usuario autenticado desde el `SecurityContext`. Por eso un usuario solo puede ver y editar su propio perfil y sus propios guardados, sin mandar su id en la URL.
+- Roles guardados en la base de datos (`USER` y `ADMIN`). Las reglas por ruta están en `SecurityConfig`, y además los métodos sensibles (crear y borrar categorías) tienen `@PreAuthorize("hasRole('ADMIN')")`.
+- Leer la portada, titulares, mercados y categorías es público; guardar, seguir temas y ver el perfil requieren token.
+- Contraseñas hasheadas con BCrypt. La clave del JWT, las credenciales de la base de datos, la API key de Groq y la contraseña del correo se leen de variables de entorno y el `.env` no se sube al repositorio.
 
-## **⚙️ Instalación, Configuración y Variables de Entorno**
+### Prevención de vulnerabilidades
 
-### **Prerrequisitos**
+- Inyección SQL: todo el acceso a datos es con Spring Data JPA y consultas JPQL con parámetros (`:categoria`, `:q`). Nunca se concatena texto del usuario en una consulta.
+- CSRF: está deshabilitado porque la API es stateless y no usa cookies de sesión. El token viaja en un header, que un sitio externo no puede agregar solo.
+- CORS: solo se aceptan los orígenes configurados en `CORS_ALLOWED_ORIGINS` (por defecto los puertos locales del frontend).
+- XSS: la API solo devuelve JSON y en los correos Thymeleaf escapa las variables.
 
-* Java 17 JDK  
-* Maven 3.8+  
-* PostgreSQL o Docker para base de datos
+## Eventos y asincronía
 
-### **Variables de Entorno Requeridas (application.properties / .env)**
+Usamos eventos de Spring para que la lógica principal no dependa del envío de correos ni de otras tareas secundarias:
 
-SPRING\_DATASOURCE\_URL=jdbc:postgresql://localhost:5432/idontknow\_db  
-SPRING\_DATASOURCE\_USERNAME=postgres  
-SPRING\_DATASOURCE\_PASSWORD=tu\_password  
-JWT\_SECRET\_KEY=tu\_clave\_secreta\_jwt\_muy\_larga\_y\_segura\_2026  
-GROQ\_API\_KEY=tu\_api\_key\_de\_groq  
-SPRING\_MAIL\_HOST=smtp.gmail.com  
-SPRING\_MAIL\_PORT=587  
-SPRING\_MAIL\_USERNAME=tu\_correo@gmail.com  
-SPRING\_MAIL\_PASSWORD=tu\_app\_password
+1. `UsuarioRegistradoEvent`: lo publica `AuthService` al registrar a alguien. `EmailService` lo escucha y manda el correo de bienvenida.
+2. `MercadoUmbralCruzadoEvent`: lo publica `MercadoService` cuando un mercado pasa de menos de 50% a 50% o más. El listener usa `@TransactionalEventListener` (después del commit), busca a los usuarios que siguen alguna categoría de ese mercado y les manda la alerta.
+3. `PortadaGeneradaEvent`: lo publica `PortadaBuilderService` cuando termina de armar la portada del día y queda registrado en el log.
 
-### **Ejecución Local**
+Los listeners son `@Async` y corren en un `ThreadPoolTaskExecutor` propio (`AsyncConfig`, de 4 a 8 hilos). Tienen que ser asíncronos porque mandar un correo por SMTP puede tardar varios segundos, y la alerta de umbral puede ir a muchos usuarios a la vez. Si fuera síncrono, el registro tardaría lo que tarda Gmail en responder, y la sincronización quedaría bloqueada mientras salen los correos. Los correos usan plantillas HTML con Thymeleaf (`welcome-email.html` y `umbral-cruzado-email.html`). Si un envío falla se registra en el log y no se corta el resto.
 
-\# Clonar repositorio  
-git clone https://github.com/tu-usuario/idontknow-backend.git  
-cd idontknow-backend
+La sincronización con Polymarket también corre en segundo plano con `@Scheduled` y `@Async`. Cada mercado se procesa en su propia transacción, así que si uno falla los demás igual se guardan. Si Groq no responde, el titular queda con la pregunta original y la portada se arma igual.
 
-\# Compilar y ejecutar  
-./mvnw clean spring-boot:run
+## Endpoints
 
-## **📄 Documentación de API y Colección de Postman**
+Base: `/api/v1`. La colección `postman_collection.json` tiene todos los endpoints con descripción, variables, autenticación Bearer configurada y ejemplos de respuesta exitosa y de error.
 
-La documentación completa de los endpoints de la API REST se encuentra disponible en formato JSON en la raíz del proyecto:
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| POST | `/auth/register` | Público | Crear cuenta |
+| POST | `/auth/login` | Público | Iniciar sesión |
+| GET | `/usuarios/me` | Usuario | Ver mi perfil |
+| PUT | `/usuarios/me` | Usuario | Actualizar nombre o contraseña |
+| POST | `/usuarios/me/categorias/{id}` | Usuario | Seguir una categoría |
+| DELETE | `/usuarios/me/categorias/{id}` | Usuario | Dejar de seguirla |
+| GET | `/categorias` | Público | Listar categorías |
+| POST | `/categorias` | ADMIN | Crear categoría |
+| DELETE | `/categorias/{id}` | ADMIN | Borrar categoría |
+| GET | `/mercados?categoria=&q=&page=&size=` | Público | Buscar mercados (paginado) |
+| GET | `/mercados/{id}` | Público | Detalle con historial |
+| GET | `/ediciones/hoy` | Público | Portada de hoy |
+| GET | `/ediciones/{fecha}` | Público | Portada de una fecha |
+| GET | `/ediciones?page=&size=` | Público | Archivo de portadas |
+| GET | `/titulares/{id}` | Público | Detalle de un titular |
+| POST | `/guardados` | Usuario | Guardar un titular |
+| DELETE | `/guardados/{titularId}` | Usuario | Quitarlo de guardados |
+| GET | `/guardados` | Usuario | Mis titulares guardados |
 
-* **Archivo Postman:** postman\_collection.json (incluye variables de entorno, tokens JWT automáticos y ejemplos de payload para todos los controladores: Auth, Usuario, Mercado, Categoria, Edicion, Titular, Guardado y Snapshot).  
-* **Swagger UI / OpenAPI:** Accesible en modo ejecutable mediante /swagger-ui.html.
+## Cómo correrlo
 
-## **📊 Gestión del Proyecto, GitHub & CI/CD**
+Requisitos: Docker. Para correrlo desde el IDE, además Java 21.
 
-* **GitHub Projects:** Control de tareas mediante tablero Kanban, asignación de *issues*, etiquetas (feature, bug, documentation) y *milestones* semanales.  
-* **GitFlow & Branching:** Desarrollo estructurado sobre ramas main, develop y ramas de características feature/\*.  
-* **GitHub Actions (CI/CD):** Flujo de integración continua configurado para ejecutar compilación con Maven y suite de pruebas unitarias (IdontknowBackendApplicationTests) en cada *Pull Request* hacia la rama principal.
+```bash
+cp .env.example .env      # completar con las claves reales
+docker compose up --build
+```
 
-## **📝 Conclusión y Trabajo Futuro**
+La API queda en `http://localhost:8080/api/v1` y Swagger en `http://localhost:8080/api/v1/swagger-ui/index.html`. El `data.sql` crea las cuatro categorías y un usuario administrador (`admin@idontknow.com` / `admin123`) para probar.
 
-### **Logros Alcanzados**
+Variables de entorno:
 
-Se logró construir una arquitectura backend sólida, desacoplada y orientada a eventos en Spring Boot, integrando con éxito procesamiento de lenguaje natural (Groq), ingesta en tiempo real (Polymarket), autenticación robusta mediante JWT y notificaciones por correo asíncronas.
+| Variable | Para qué |
+|---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Conexión a PostgreSQL |
+| `JWT_SECRET` | Clave para firmar los tokens (64+ caracteres) |
+| `GROQ_API_KEY` | Traducción de titulares |
+| `MAIL_USERNAME`, `MAIL_APP_PASSWORD` | Cuenta de Gmail que envía los correos |
+| `CORS_ALLOWED_ORIGINS` | Orígenes permitidos para el frontend |
 
-### **Aprendizajes Clave**
+## GitHub y gestión del proyecto
 
-* Implementación avanzada de patrones de diseño, segregación de DTOs y manejo eficiente de relaciones Lazy en JPA.  
-* Desacoplamiento de componentes de negocio mediante ApplicationEventPublisher.  
-* Integración limpia de APIs externas e IA en un flujo de trabajo RESTful.
+[COMPLETAR con lo que realmente hicieron: si usaron GitHub Projects, cómo repartieron los issues, qué labels y milestones usaron, y la regla de ramas. Por ejemplo: "Usamos un tablero de GitHub Projects con columnas To do / In progress / Done. Cada funcionalidad fue un issue con su responsable y fecha límite, y trabajamos con ramas feature/* que se integraban a develop por pull request con revisión de otro integrante."]
 
-### **Trabajo Futuro**
+GitHub Actions: el workflow `.github/workflows/ci.yml` corre en cada push y pull request a `main` y `develop`. Levanta un contenedor de PostgreSQL, configura Java 21 y ejecuta `./mvnw clean verify`, que compila el proyecto y corre las pruebas unitarias de `AuthService`, `CategoriaService`, `MercadoService`, `GuardadoService` y `ScoreCalculator`, además del test que levanta el contexto completo. Si algo falla, el PR queda marcado y no se integra.
 
-* Incorporar caché distribuido con Redis para acelerar las consultas de mercados y portadas.  
-* Desplegar la infraestructura utilizando contenedores AWS ECS/RDS con soporte para WebSockets para actualización de probabilidades en tiempo real.
+Deploy: el backend está en Railway, conectado al repositorio y construido con el `Dockerfile`, con una base PostgreSQL del mismo proyecto y todas las credenciales como variables de entorno del servicio.
 
-## **📜 Apéndices y Licencia**
+## Conclusión
 
-* **Licencia:** Distribuido bajo la Licencia **MIT**. Consulte LICENSE para más información.  
-* **Referencias:**  
-  1. Documentación Oficial de Spring Boot & Spring Security.  
-  2. Documentación API de Polymarket & Groq Cloud.  
-  3. Rúbrica de Evaluación del Proyecto CS 2031 (UTEC 2026-2).
+### Logros del proyecto
+
+Tenemos un backend que se actualiza solo: cada mañana trae los mercados, guarda la foto del día, calcula qué cambió y arma una portada en español sin que nadie haga nada. Sobre eso, un usuario puede crear su cuenta, guardar titulares, seguir temas y recibir alertas cuando algo importante cambia.
+
+### Aprendizajes clave
+
+- Lo más difícil fue lo que anticipamos en la propuesta: que la portada se arme sola. Tuvimos que entender cómo funcionan `@Scheduled` y `@Async`, y por qué un evento asíncrono no puede recibir una entidad con relaciones LAZY (el hilo nuevo ya no tiene la sesión de Hibernate).
+- Guardar el historial fue lo que hizo posible todo lo demás. Sin los snapshots no hay "cambio desde ayer" ni puntaje.
+- Integrar APIs externas obliga a pensar qué pasa cuando fallan. Por eso Groq tiene un fallback y cada mercado se sincroniza en su propia transacción.
+
+### Trabajo futuro
+
+- Portada personalizada según los temas que sigue cada usuario, y filtro de la portada por categoría.
+- Explicación corta de cada mercado generada con Groq, y volumen del mercado en el detalle.
+- Refresh tokens y recuperación de contraseña por correo.
+- Clasificar las categorías con el modelo de lenguaje en vez de palabras clave.
+- El frontend en React, que es la siguiente entrega.
+
+## Apéndices
+
+### Licencia
+
+MIT. Ver el archivo `LICENSE`.
+
+### Referencias
+
+- Documentación de Spring Boot y Spring Security: https://docs.spring.io/spring-boot/
+- Polymarket Gamma API: https://docs.polymarket.com/
+- Groq API: https://console.groq.com/docs
+- JJWT: https://github.com/jwtk/jjwt
+- Material de laboratorio del curso CS 2031 (UTEC, 2026-2)

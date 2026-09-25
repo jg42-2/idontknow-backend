@@ -38,7 +38,7 @@ class AuthServiceTest {
 
     @Test
     void register_conEmailYaRegistrado_lanzaExcepcion() {
-        RegisterRequestDTO dto = new RegisterRequestDTO("Joseph", "joseph@test.com", "password123");
+        RegisterRequestDTO dto = new RegisterRequestDTO("Joseph", "joseph@test.com", "Password123");
         when(usuarioRepository.existsByEmail("joseph@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(dto))
@@ -49,9 +49,9 @@ class AuthServiceTest {
 
     @Test
     void register_exitoso_devuelveTokenYPublicaEvento() {
-        RegisterRequestDTO dto = new RegisterRequestDTO("Joseph", "joseph@test.com", "password123");
+        RegisterRequestDTO dto = new RegisterRequestDTO("Joseph", "joseph@test.com", "Password123");
         when(usuarioRepository.existsByEmail("joseph@test.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("hash");
+        when(passwordEncoder.encode("Password123")).thenReturn("hash");
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
         when(jwtService.generateToken("joseph@test.com")).thenReturn("fake-jwt");
 
@@ -75,10 +75,10 @@ class AuthServiceTest {
 
     @Test
     void login_exitoso_devuelveToken() {
-        LoginRequestDTO dto = new LoginRequestDTO("joseph@test.com", "password123");
+        LoginRequestDTO dto = new LoginRequestDTO("joseph@test.com", "Password123");
         Usuario usuario = Usuario.builder().email("joseph@test.com").password("hash").role(Role.USER).nombre("Joseph").build();
         when(usuarioRepository.findByEmail("joseph@test.com")).thenReturn(Optional.of(usuario));
-        when(passwordEncoder.matches("password123", "hash")).thenReturn(true);
+        when(passwordEncoder.matches("Password123", "hash")).thenReturn(true);
         when(jwtService.generateToken("joseph@test.com")).thenReturn("fake-jwt");
 
         AuthResponseDTO resultado = authService.login(dto);

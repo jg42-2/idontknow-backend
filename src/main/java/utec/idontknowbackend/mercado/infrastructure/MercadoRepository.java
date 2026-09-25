@@ -15,8 +15,8 @@ public interface MercadoRepository extends JpaRepository<Mercado, Long> {
     @Query("""
             select distinct m from Mercado m
             left join m.categorias c
-            where (:categoria is null or upper(c.nombre) = upper(:categoria))
-            and (:q is null or upper(m.preguntaOriginal) like upper(concat('%', :q, '%')))
+            where (:categoria = '' or upper(c.nombre) = upper(:categoria))
+            and upper(m.preguntaOriginal) like upper(concat('%', :q, '%'))
             """)
     Page<Mercado> buscar(@Param("categoria") String categoria, @Param("q") String q, Pageable pageable);
 }
