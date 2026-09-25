@@ -16,6 +16,7 @@ public class MercadoController {
 
     private final MercadoService mercadoService;
 
+    @GetMapping
     public ResponseEntity<Page<MercadoResponseDTO>> getAll(
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String q,
