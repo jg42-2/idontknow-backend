@@ -18,8 +18,8 @@ public class MercadoController {
 
     @GetMapping
     public ResponseEntity<Page<MercadoResponseDTO>> getAll(
-            @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "") String categoria,
+            @RequestParam(defaultValue = "") String q,
             Pageable pageable) {
         return ResponseEntity.ok(mercadoService.getAll(categoria, q, pageable));
     }

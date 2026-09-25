@@ -9,11 +9,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import utec.idontknowbackend.edicion.model.PortadaGeneradaEvent;
 import utec.idontknowbackend.exceptions.EmailSendingException;
-import utec.idontknowbackend.mercado.model.Mercado;
 import utec.idontknowbackend.mercado.model.MercadoUmbralCruzadoEvent;
 import utec.idontknowbackend.user.infrastructure.UsuarioRepository;
 import utec.idontknowbackend.user.model.Usuario;
@@ -40,25 +41,27 @@ public class EmailService {
     }
 
     @Async
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void onMercadoUmbralCruzado(MercadoUmbralCruzadoEvent event) {
-        Mercado mercado = event.getMercado();
-        List<Usuario> seguidores = usuarioRepository.findSeguidoresDeCategorias(mercado.getCategorias());
+        List<Usuario> seguidores = usuarioRepository.findSeguidoresDeMercado(event.getMercadoId());
 
         for (Usuario usuario : seguidores) {
             Context context = new Context();
             context.setVariable("nombre", usuario.getNombre());
-            context.setVariable("pregunta", mercado.getPreguntaOriginal());
-            context.setVariable("probabilidad", mercado.getProbabilidadActual());
-            enviar(usuario.getEmail(), "Un mercado que sigues cruzó el 50%", "umbral-cruzado-email", context);
+            context.setVariable("pregunta", event.getPregunta());
+            context.setVariable("probabilidad", event.getProbabilidad());
+            try {
+                enviar(usuario.getEmail(), "Un mercado que sigues cruzó el 50%", "umbral-cruzado-email", context);
+            } catch (Exception ex) {
+                log.error("No se pudo avisar a {}: {}", usuario.getEmail(), ex.getMessage());
+            }
         }
     }
 
     @Async
     @EventListener
     public void onPortadaGenerada(PortadaGeneradaEvent event) {
-        log.info("Portada generada: {} titulares para el {}",
-                event.getEdicion().getTitulares().size(), event.getEdicion().getFecha());
+        log.info("Portada generada: {} titulares para el {}", event.getCantidadTitulares(), event.getFecha());
     }
 
     private void enviar(String destinatario, String asunto, String template, Context context) {

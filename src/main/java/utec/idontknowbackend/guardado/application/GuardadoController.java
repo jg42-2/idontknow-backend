@@ -1,5 +1,6 @@
 package utec.idontknowbackend.guardado.application;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class GuardadoController {
     private final GuardadoService guardadoService;
 
     @PostMapping
-    public ResponseEntity<GuardadoResponseDTO> guardar(@RequestBody GuardadoRequestDTO dto) {
+    public ResponseEntity<GuardadoResponseDTO> guardar(@Valid @RequestBody GuardadoRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardadoService.guardar(dto.getTitularId()));
     }
 

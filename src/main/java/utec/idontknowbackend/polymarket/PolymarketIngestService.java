@@ -3,6 +3,7 @@ package utec.idontknowbackend.polymarket;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import utec.idontknowbackend.mercado.infrastructure.MercadoRepository;
 import utec.idontknowbackend.mercado.model.Mercado;
 import utec.idontknowbackend.mercado.model.MercadoService;
@@ -21,25 +22,21 @@ public class PolymarketIngestService {
     private final MercadoRepository mercadoRepository;
     private final MercadoService mercadoService;
     private final SnapshotService snapshotService;
+    private final CategoriaClasificador clasificador;
+    private final TransactionTemplate transactionTemplate;
 
     public List<MovimientoMercado> sincronizar() {
         List<PolymarketMarketDTO> mercadosExternos = polymarketClient.obtenerMercadosActivos();
         List<MovimientoMercado> movimientos = new ArrayList<>();
 
         for (PolymarketMarketDTO dto : mercadosExternos) {
+            BigDecimal nuevaProbabilidad = dto.getProbabilidadSi();
+            if (nuevaProbabilidad == null) continue;
+
             try {
-                BigDecimal nuevaProbabilidad = dto.getProbabilidadSi();
-                if (nuevaProbabilidad == null) continue;
-
-                Mercado mercado = mercadoRepository.findByPolymarketId(dto.getId())
-                        .orElseGet(() -> crearMercado(dto));
-
-                BigDecimal anterior = mercado.getProbabilidadActual();
-
-                mercadoService.actualizarProbabilidad(mercado, nuevaProbabilidad);
-                snapshotService.registrar(mercado, nuevaProbabilidad);
-
-                movimientos.add(new MovimientoMercado(mercado, anterior, nuevaProbabilidad));
+                // una transacción por mercado: si uno falla no se cae toda la sincronización
+                MovimientoMercado mov = transactionTemplate.execute(status -> procesar(dto, nuevaProbabilidad));
+                movimientos.add(mov);
             } catch (Exception ex) {
                 log.error("Error sincronizando mercado {}: {}", dto.getId(), ex.getMessage());
             }
@@ -47,11 +44,28 @@ public class PolymarketIngestService {
         return movimientos;
     }
 
-    private Mercado crearMercado(PolymarketMarketDTO dto) {
+    private MovimientoMercado procesar(PolymarketMarketDTO dto, BigDecimal nuevaProbabilidad) {
+        Mercado mercado = mercadoRepository.findByPolymarketId(dto.getId())
+                .orElseGet(() -> crearMercado(dto, nuevaProbabilidad));
+
+        if (mercado.getCategorias().isEmpty()) {
+            mercado.getCategorias().addAll(clasificador.clasificar(mercado.getPreguntaOriginal()));
+        }
+
+        // se compara contra la última foto de un día anterior; si es nuevo no hay cambio
+        BigDecimal anterior = snapshotService.probabilidadAnterior(mercado.getId()).orElse(nuevaProbabilidad);
+
+        mercadoService.actualizarProbabilidad(mercado, nuevaProbabilidad);
+        snapshotService.registrar(mercado, nuevaProbabilidad);
+
+        return new MovimientoMercado(mercado, anterior, nuevaProbabilidad);
+    }
+
+    private Mercado crearMercado(PolymarketMarketDTO dto, BigDecimal probabilidad) {
         Mercado nuevo = Mercado.builder()
                 .polymarketId(dto.getId())
                 .preguntaOriginal(dto.getQuestion())
-                .probabilidadActual(BigDecimal.ZERO)
+                .probabilidadActual(probabilidad)
                 .fechaResolucionEstimada(dto.getEndDateAsLocalDateTime())
                 .resuelto(false)
                 .build();

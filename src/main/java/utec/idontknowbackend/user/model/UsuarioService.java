@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import utec.idontknowbackend.categoria.infrastructure.CategoriaRepository;
 import utec.idontknowbackend.categoria.model.Categoria;
+import utec.idontknowbackend.exceptions.InvalidOperationException;
 import utec.idontknowbackend.exceptions.ResourceNotFoundException;
 import utec.idontknowbackend.user.DTO.UsuarioResponseDTO;
 import utec.idontknowbackend.user.DTO.UsuarioUpdateRequestDTO;
@@ -55,7 +56,10 @@ public class UsuarioService {
 
     public UsuarioResponseDTO dejarDeSeguirCategoria(Long categoriaId) {
         Usuario usuario = getUsuarioAutenticado();
-        usuario.getCategoriasSeguidas().removeIf(c -> c.getId().equals(categoriaId));
+        boolean laSeguia = usuario.getCategoriasSeguidas().removeIf(c -> c.getId().equals(categoriaId));
+        if (!laSeguia) {
+            throw new InvalidOperationException("No sigues esa categoría");
+        }
         return toResponseDTO(usuarioRepository.save(usuario));
     }
 
