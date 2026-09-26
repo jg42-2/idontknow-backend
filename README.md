@@ -10,7 +10,7 @@ Integrantes:
 - Felipe Dipas Prado
 - Joseph Geraldo Soto
 
-Deploy: [PEGAR AQUÍ EL LINK DE RAILWAY]/api/v1 · Swagger: [LINK]/api/v1/swagger-ui/index.html
+Deploy: https://idontknow-backend.onrender.com/api/v1 · Swagger: https://idontknow-backend.onrender.com/api/v1/swagger-ui/index.html (plan gratuito: la primera petición puede tardar ~1 minuto en despertar el servidor)
 
 ## Índice
 
@@ -72,7 +72,7 @@ Los medios cuentan lo que pasó, pero los mercados de predicción muestran lo qu
 - ModelMapper para el mapeo entidad-DTO y Lombok
 - Springdoc OpenAPI (Swagger UI)
 - APIs externas: Polymarket Gamma API (mercados y precios) y Groq con el modelo `llama-3.3-70b-versatile` (titulares en español)
-- Docker y Docker Compose para desarrollo local, Railway para el deploy
+- Docker y Docker Compose para desarrollo local, Render para el deploy
 - JUnit 5 y Mockito para las pruebas, GitHub Actions para CI
 
 ## Modelo de entidades
@@ -208,11 +208,11 @@ Variables de entorno:
 
 ## GitHub y gestión del proyecto
 
-[COMPLETAR con lo que realmente hicieron: si usaron GitHub Projects, cómo repartieron los issues, qué labels y milestones usaron, y la regla de ramas. Por ejemplo: "Usamos un tablero de GitHub Projects con columnas To do / In progress / Done. Cada funcionalidad fue un issue con su responsable y fecha límite, y trabajamos con ramas feature/* que se integraban a develop por pull request con revisión de otro integrante."]
+La coordinación del equipo fue por un grupo de WhatsApp: ahí nos repartimos las partes del backend (entidades y repositorios, seguridad y JWT, integración con Polymarket y Groq, eventos y correos, documentación y Postman) y acordamos fechas internas antes de la entrega. Al inicio cada uno subía sus cambios directo a `master`. Para el cierre de este hito pasamos a trabajar con ramas: los últimos arreglos se hicieron en `fix/ingesta-seguridad-docs` y entraron a `master` con un pull request revisado por otro integrante y validado por el CI. Para la entrega del frontend vamos a mover las tareas a GitHub Projects con issues, responsables y fechas límite.
 
 GitHub Actions: el workflow `.github/workflows/ci.yml` corre en cada push y pull request a `main` y `develop`. Levanta un contenedor de PostgreSQL, configura Java 21 y ejecuta `./mvnw clean verify`, que compila el proyecto y corre las pruebas unitarias de `AuthService`, `CategoriaService`, `MercadoService`, `GuardadoService` y `ScoreCalculator`, además del test que levanta el contexto completo. Si algo falla, el PR queda marcado y no se integra.
 
-Deploy: el backend está en Railway, conectado al repositorio y construido con el `Dockerfile`, con una base PostgreSQL del mismo proyecto y todas las credenciales como variables de entorno del servicio.
+Deploy: el backend está en Render como Web Service, construido desde `master` con el `Dockerfile`, conectado a una base PostgreSQL de Render y con todas las credenciales como variables de entorno del servicio. Como usamos el plan gratuito, el servidor se duerme tras 15 minutos sin tráfico y la primera petición puede tardar cerca de un minuto en responder.
 
 ## Conclusión
 
