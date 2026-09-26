@@ -16,7 +16,7 @@ Deploy: https://idontknow-backend.onrender.com/api/v1 · Swagger: https://idontk
 
 1. [Introducción](#introducción)
 2. [Identificación del problema](#identificación-del-problema)
-3. [Descripción de la solución](#descripción-de-la-solución)
+3. [Descripción de la solución](#descripción-de-la-solución) (incluye arquitectura)
 4. [Modelo de entidades](#modelo-de-entidades)
 5. [Manejo de errores](#manejo-de-errores)
 6. [Medidas de seguridad](#medidas-de-seguridad)
@@ -39,7 +39,6 @@ Polymarket es una plataforma donde miles de personas apuestan dinero sobre cosas
 - Armar automáticamente una portada con los temas que más cambiaron desde ayer, usando un puntaje propio.
 - Convertir las preguntas en titulares en español con un modelo de lenguaje (Groq).
 - Permitir que un usuario cree su cuenta, guarde titulares y siga temas para recibir alertas por correo.
-- Construir todo con una arquitectura en capas, segura con JWT y con procesos lentos en segundo plano.
 
 ## Identificación del problema
 
@@ -49,7 +48,7 @@ Alguien que quiere saber cómo va una elección no va a leer cientos de mercados
 
 ### Justificación
 
-Los medios cuentan lo que pasó, pero los mercados de predicción muestran lo que la gente cree que va a pasar, y con dinero de por medio. Llevar esa información al español, ordenada como un diario y con historial, la hace útil para cualquier lector. Además, el cambio diario es un buen filtro editorial: si un mercado se movió 15 puntos en un día, algo pasó.
+Los medios cuentan lo que pasó, pero los mercados de predicción muestran lo que la gente cree que va a pasar, y con dinero de por medio. Llevar esa información al español, ordenada como un diario y con historial, la hace útil para cualquier lector.
 
 ## Descripción de la solución
 
@@ -75,6 +74,27 @@ Los medios cuentan lo que pasó, pero los mercados de predicción muestran lo qu
 - Docker y Docker Compose para desarrollo local, Render para el deploy
 - JUnit 5 y Mockito para las pruebas, GitHub Actions para CI
 
+### Arquitectura y decisiones de diseño
+
+```mermaid
+flowchart LR
+    FE[Frontend / Postman] -->|JWT| C[Controllers]
+    C --> S[Services]
+    S --> R[Repositories JPA]
+    R --> DB[(PostgreSQL)]
+    J[Scheduler 6 a.m.] --> I[PolymarketIngestService]
+    I --> PM[Polymarket API]
+    I --> P[PortadaBuilderService]
+    P --> G[Groq API]
+    S -. eventos .-> E[EmailService @Async]
+    E --> SMTP[Gmail SMTP]
+```
+
+- Capas separadas por dominio (usuario, mercado, edicion, titular, etc.), cada una con `application` (controller), `model` (entidad y servicio), `infrastructure` (repositorio) y `DTO`.
+- La portada se arma sola con un job programado y no con un endpoint, porque depende de comparar la foto de hoy contra la de ayer.
+- Guardamos snapshots diarios en vez de solo el precio actual: sin historial no hay "cambio desde ayer" ni gráfico.
+- Correos y alertas van por eventos asíncronos para no frenar el registro ni la sincronización.
+
 ## Modelo de entidades
 
 ```mermaid
@@ -90,7 +110,7 @@ erDiagram
 
 ### Descripción de entidades
 
-- Usuario: nombre, email (único), contraseña hasheada con BCrypt, rol (`USER` o `ADMIN`) y fecha de registro. Sigue varias categorías (ManyToMany) y tiene varios guardados (OneToMany).
+- Usuario: nombre, email único, contraseña con BCrypt, rol (`USER`/`ADMIN`) y fecha de registro. Sigue categorías (ManyToMany) y tiene guardados (OneToMany).
 - Categoria: nombre único (POLITICA, ECONOMIA, DEPORTES, TECNOLOGIA). Se relaciona muchos a muchos con Mercado y con Usuario.
 - Mercado: id de Polymarket (único e indexado), pregunta original en inglés, probabilidad actual, si está resuelto y fecha estimada de resolución. Tiene muchos snapshots y pertenece a varias categorías.
 - Snapshot: la foto diaria de un mercado (probabilidad y fecha). Hay una restricción única por mercado y fecha, así que solo existe una foto por día.
@@ -98,9 +118,9 @@ erDiagram
 - Titular: pertenece a una edición y a un mercado. Guarda el texto en español, la probabilidad del día, el cambio desde ayer y el puntaje.
 - Guardado: tabla intermedia entre Usuario y Titular con la fecha en que se guardó. Tiene una restricción única (usuario, titular) para no guardar dos veces lo mismo.
 
-Todas las relaciones usan `FetchType.LAZY`. Las colecciones que dependen de su padre (snapshots de un mercado, titulares de una edición, guardados de un usuario) usan `cascade = ALL` y `orphanRemoval`. En las entidades hay restricciones de base de datos (`nullable`, `unique`, `length`, índices) y validaciones como `@NotBlank`, `@Email`, `@Size`, `@DecimalMin` y `@DecimalMax`. Los DTOs de entrada se validan con `@Valid`, y la contraseña además con un `@Pattern` que exige mayúscula, minúscula y número.
+Todas las relaciones son `LAZY`, y las colecciones que dependen de su padre (snapshots, titulares, guardados) usan `cascade = ALL` y `orphanRemoval`. En las entidades hay restricciones de base de datos (`nullable`, `unique`, `length`, índices) y validaciones como `@NotBlank`, `@Email`, `@Size`, `@DecimalMin` y `@DecimalMax`. Los DTOs de entrada se validan con `@Valid`, y la contraseña además con un `@Pattern` que exige mayúscula, minúscula y número.
 
-Los controladores nunca devuelven entidades: hay DTOs separados de request, response, detalle y resumen (por ejemplo `MercadoResponseDTO` y `MercadoDetailDTO`, o `EdicionResponseDTO` y `EdicionSummaryDTO`), y ninguno expone la contraseña.
+Los controladores nunca devuelven entidades: hay DTOs de request, response, detalle y resumen (como `MercadoDetailDTO` o `EdicionSummaryDTO`) y ninguno expone la contraseña.
 
 ## Manejo de errores
 
@@ -136,7 +156,7 @@ También se manejan excepciones de Spring: `MethodArgumentNotValidException` (40
 ### Seguridad de datos
 
 - Autenticación stateless con JWT. El login y el registro devuelven un token firmado con HMAC que dura 24 horas. `JwtFilter` lo lee del header `Authorization: Bearer`, valida la firma y la expiración, carga al usuario con un `UserDetailsService` propio y lo pone en el `SecurityContext`.
-- Los servicios obtienen al usuario autenticado desde el `SecurityContext`. Por eso un usuario solo puede ver y editar su propio perfil y sus propios guardados, sin mandar su id en la URL.
+- Los servicios toman al usuario del `SecurityContext`, así cada uno solo ve y edita su propio perfil y guardados.
 - Roles guardados en la base de datos (`USER` y `ADMIN`). Las reglas por ruta están en `SecurityConfig`, y además los métodos sensibles (crear y borrar categorías) tienen `@PreAuthorize("hasRole('ADMIN')")`.
 - Leer la portada, titulares, mercados y categorías es público; guardar, seguir temas y ver el perfil requieren token.
 - Contraseñas hasheadas con BCrypt. La clave del JWT, las credenciales de la base de datos, la API key de Groq y la contraseña del correo se leen de variables de entorno y el `.env` no se sube al repositorio.
@@ -156,7 +176,7 @@ Usamos eventos de Spring para que la lógica principal no dependa del envío de 
 2. `MercadoUmbralCruzadoEvent`: lo publica `MercadoService` cuando un mercado pasa de menos de 50% a 50% o más. El listener usa `@TransactionalEventListener` (después del commit), busca a los usuarios que siguen alguna categoría de ese mercado y les manda la alerta.
 3. `PortadaGeneradaEvent`: lo publica `PortadaBuilderService` cuando termina de armar la portada del día y queda registrado en el log.
 
-Los listeners son `@Async` y corren en un `ThreadPoolTaskExecutor` propio (`AsyncConfig`, de 4 a 8 hilos). Tienen que ser asíncronos porque mandar un correo por SMTP puede tardar varios segundos, y la alerta de umbral puede ir a muchos usuarios a la vez. Si fuera síncrono, el registro tardaría lo que tarda Gmail en responder, y la sincronización quedaría bloqueada mientras salen los correos. Los correos usan plantillas HTML con Thymeleaf (`welcome-email.html` y `umbral-cruzado-email.html`). Si un envío falla se registra en el log y no se corta el resto.
+Los listeners son `@Async` y corren en un `ThreadPoolTaskExecutor` propio (`AsyncConfig`, de 4 a 8 hilos). Tienen que ser asíncronos porque mandar un correo por SMTP puede tardar varios segundos, y la alerta de umbral puede ir a muchos usuarios a la vez. Si fuera síncrono, el registro tardaría lo que tarda Gmail en responder, y la sincronización quedaría bloqueada mientras salen los correos. Los correos usan plantillas HTML con Thymeleaf (`welcome-email.html` y `umbral-cruzado-email.html`).
 
 La sincronización con Polymarket también corre en segundo plano con `@Scheduled` y `@Async`. Cada mercado se procesa en su propia transacción, así que si uno falla los demás igual se guardan. Si Groq no responde, el titular queda con la pregunta original y la portada se arma igual.
 
@@ -218,13 +238,12 @@ Deploy: el backend está en Render como Web Service, construido desde `master` c
 
 ### Logros del proyecto
 
-Tenemos un backend que se actualiza solo: cada mañana trae los mercados, guarda la foto del día, calcula qué cambió y arma una portada en español sin que nadie haga nada. Sobre eso, un usuario puede crear su cuenta, guardar titulares, seguir temas y recibir alertas cuando algo importante cambia.
+El backend se actualiza solo: cada mañana trae los mercados, guarda la foto del día, calcula qué cambió y arma una portada en español. Sobre eso, un usuario puede crear su cuenta, guardar titulares, seguir temas y recibir alertas.
 
 ### Aprendizajes clave
 
 - Lo más difícil fue lo que anticipamos en la propuesta: que la portada se arme sola. Tuvimos que entender cómo funcionan `@Scheduled` y `@Async`, y por qué un evento asíncrono no puede recibir una entidad con relaciones LAZY (el hilo nuevo ya no tiene la sesión de Hibernate).
-- Guardar el historial fue lo que hizo posible todo lo demás. Sin los snapshots no hay "cambio desde ayer" ni puntaje.
-- Integrar APIs externas obliga a pensar qué pasa cuando fallan. Por eso Groq tiene un fallback y cada mercado se sincroniza en su propia transacción.
+- Integrar APIs externas obliga a pensar qué pasa cuando fallan.
 
 ### Trabajo futuro
 
