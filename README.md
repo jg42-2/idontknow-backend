@@ -7,7 +7,6 @@ Integrantes:
 - Hideki Aldo Kunigami Chia
 - Sergio Peña Andia
 - Rance Blondet Borja
-- Felipe Dipas Prado
 - Joseph Geraldo Soto
 
 Deploy: https://idontknow-backend.onrender.com/api/v1 · Swagger: https://idontknow-backend.onrender.com/api/v1/swagger-ui/index.html (plan gratuito: la primera petición puede tardar ~1 minuto en despertar el servidor)
